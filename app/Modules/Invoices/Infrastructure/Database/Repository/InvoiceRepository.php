@@ -9,6 +9,7 @@ use \App\Modules\Invoices\Domain\Repository\InvoiceRepositoryInterface;
 use App\Modules\Invoices\Infrastructure\Mappers\CompanyMapper;
 use App\Modules\Invoices\Infrastructure\Mappers\InvoiceMapper;
 use App\Modules\Invoices\Infrastructure\Mappers\ProductMapper;
+use Illuminate\Database\RecordsNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Ramsey\Uuid\UuidInterface;
 
@@ -19,6 +20,10 @@ final class InvoiceRepository implements InvoiceRepositoryInterface
         $invoiceData = DB::table('invoices')
             ->where('id', '=', $id->toString())
             ->first();
+
+        if (!$invoiceData) {
+            throw new RecordsNotFoundException('Invoice was not found');
+        }
 
         $company = $this->getCompanyData($invoiceData->company_id);
         $billedCompany = $this->getCompanyData($invoiceData->billed_company_id);
@@ -52,6 +57,10 @@ final class InvoiceRepository implements InvoiceRepositoryInterface
         $companyData = DB::table('companies')
             ->where('id', '=', $uuid)
             ->first();
+
+        if (!$companyData) {
+            throw new RecordsNotFoundException('Company was not found');
+        }
 
         return CompanyMapper::fromStdObjectToCompany($companyData);
     }
